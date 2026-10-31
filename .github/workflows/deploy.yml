@@ -41,9 +41,20 @@ jobs:
         run: |
           aws s3 sync dist/ s3://pratiksha-react-hosting/ --delete
 
+      - name: Check CloudFront Distribution ID
+        env:
+          DISTRIBUTION_ID: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}
+        run: |
+          if [ -z "$DISTRIBUTION_ID" ]; then
+            echo "ERROR: CloudFront Distribution ID secret is empty!"
+            exit 1
+          fi
+          echo "CloudFront Distribution ID is configured."
+
       - name: Invalidate CloudFront Cache
+        env:
+          DISTRIBUTION_ID: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}
         run: |
           aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
+            --distribution-id "$DISTRIBUTION_ID" \
             --paths "/*"
-    
